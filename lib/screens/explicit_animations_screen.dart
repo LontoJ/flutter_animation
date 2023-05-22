@@ -12,7 +12,41 @@ class _ExplicitAnimationsScreenState extends State<ExplicitAnimationsScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 10),
+    duration: const Duration(seconds: 2),
+  )..addListener(() {
+      _range.value = _animationController.value;
+    });
+
+  late final Animation<Decoration> _decoration = DecorationTween(
+    begin: BoxDecoration(
+      color: Colors.amber,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    end: BoxDecoration(
+      color: Colors.red,
+      borderRadius: BorderRadius.circular(120),
+    ),
+  ).animate(_curve);
+
+  late final Animation<double> _rotation = Tween(
+    begin: 0.0,
+    end: 0.5,
+  ).animate(_curve);
+
+  late final Animation<double> _scale = Tween(
+    begin: 1.0,
+    end: 0.5,
+  ).animate(_curve);
+
+  late final Animation<Offset> _position = Tween(
+    begin: Offset.zero,
+    end: const Offset(0, -0.5),
+  ).animate(_curve);
+
+  late final CurvedAnimation _curve = CurvedAnimation(
+    parent: _animationController,
+    curve: Curves.elasticOut,
+    reverseCurve: Curves.elasticIn,
   );
 
   void _play() {
@@ -28,8 +62,31 @@ class _ExplicitAnimationsScreenState extends State<ExplicitAnimationsScreen>
   }
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  final ValueNotifier<double> _range = ValueNotifier(0.0);
+
+  void _onChange(double value) {
+    // _range.value = value;
+    _animationController.value = value;
+  }
+
+  bool _looping = false;
+
+  void _toggleLooping() {
+    if (_looping) {
+      _animationController.stop();
+    } else {
+      _animationController.repeat(
+        reverse: true,
+      );
+    }
+    setState(() {
+      _looping = !_looping;
+    });
   }
 
   @override
@@ -42,18 +99,21 @@ class _ExplicitAnimationsScreenState extends State<ExplicitAnimationsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _animationController.value,
-                  child: Container(
-                    color: Colors.amber,
-                    width: 400,
-                    height: 400,
+            SlideTransition(
+              position: _position,
+              child: ScaleTransition(
+                scale: _scale,
+                child: RotationTransition(
+                  turns: _rotation,
+                  child: DecoratedBoxTransition(
+                    decoration: _decoration,
+                    child: const SizedBox(
+                      width: 400,
+                      height: 400,
+                    ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -70,8 +130,23 @@ class _ExplicitAnimationsScreenState extends State<ExplicitAnimationsScreen>
                   onPressed: _rewind,
                   child: const Text("Rewind"),
                 ),
+                ElevatedButton(
+                  onPressed: _toggleLooping,
+                  child: Text(_looping ? "Stop Looping" : "Loop"),
+                ),
               ],
-            )
+            ),
+            const SizedBox(
+              height: 25,
+            ),
+            ValueListenableBuilder(
+                valueListenable: _range,
+                builder: (context, value, child) {
+                  return Slider(
+                    value: value,
+                    onChanged: _onChange,
+                  );
+                }),
           ],
         ),
       ),
