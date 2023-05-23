@@ -15,7 +15,8 @@ class _AppleWatchScreenState extends State<AppleWatchScreen>
   late final AnimationController _animationController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 800),
-  )..forward();
+  )
+    ..forward();
 
   late final CurvedAnimation _curve = CurvedAnimation(
     parent: _animationController,
@@ -51,6 +52,7 @@ class _AppleWatchScreenState extends State<AppleWatchScreen>
     });
     _animationController.forward(from: 0.0);
   }
+
 
   @override
   void dispose() {
