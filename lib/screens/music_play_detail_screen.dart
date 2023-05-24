@@ -12,15 +12,32 @@ class MusicPlayerDetailScreen extends StatefulWidget {
 }
 
 class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _progressController = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 60),
   )..repeat(reverse: true);
 
+  late final AnimationController _marqueeController = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 20),
+  )..repeat(reverse: true);
+
+  late final AnimationController _playPauseController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  );
+
+  late final Animation<Offset> _marqueeTween = Tween(
+    begin: const Offset(0.1, 0),
+    end: const Offset(-0.6, 0),
+  ).animate(_marqueeController);
+
   @override
   void dispose() {
     _progressController.dispose();
+    _marqueeController.dispose();
+    _playPauseController.dispose();
     super.dispose();
   }
 
@@ -31,6 +48,14 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
 
   String _intToString(int value) {
     return value.toString().padLeft(2, '0');
+  }
+
+  void _onPlayPauseTap() {
+    if (_playPauseController.isCompleted) {
+      _playPauseController.reverse();
+    } else {
+      _playPauseController.forward();
+    }
   }
 
   @override
@@ -80,7 +105,7 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
                   _timeTween.transform(_progressController.value).floor();
 
               final remainingTime =
-                  _timeTween.transform(1 - _progressController.value).floor();
+                  _timeTween.transform(1 - _progressController.value).ceil();
 
               return Column(
                 children: [
@@ -117,6 +142,29 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
                       ],
                     ),
                   ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  GestureDetector(
+                    onTap: _onPlayPauseTap,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedIcon(
+                          icon: AnimatedIcons.pause_play,
+                          progress: _playPauseController,
+                          size: 60,
+                          color: Colors.black,
+                        ),
+                        // LottieBuilder.asset(
+                        //   "assets/animations/play-lottie.json",
+                        //   controller: _playPauseController,
+                        //   width: 200,
+                        //   height: 200,
+                        // ),
+                      ],
+                    ),
+                  ),
                 ],
               );
             },
@@ -131,12 +179,16 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
           const SizedBox(
             height: 5,
           ),
-          const Text(
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eget felis ut nisl ultricies aliquet.',
-            maxLines: 1,
-            overflow: TextOverflow.visible,
-            style: TextStyle(
-              fontSize: 18,
+          SlideTransition(
+            position: _marqueeTween,
+            child: const Text(
+              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eget felis ut nisl ultricies aliquet.',
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: 18,
+              ),
             ),
           ),
         ],
