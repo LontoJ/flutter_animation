@@ -16,12 +16,14 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
   late final AnimationController _progressController = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 60),
-  )..repeat(reverse: true);
+  )
+    ..repeat(reverse: true);
 
   late final AnimationController _marqueeController = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 20),
-  )..repeat(reverse: true);
+  )
+    ..repeat(reverse: true);
 
   late final AnimationController _playPauseController = AnimationController(
     vsync: this,
@@ -58,9 +60,25 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
     }
   }
 
+  bool _dragging = false;
+
+  void _toggleDragging() {
+    setState(() {
+      _dragging = !_dragging;
+    });
+  }
+
+  final ValueNotifier<double> _volume = ValueNotifier<double>(0.0);
+
+  void _onVolumeDragUpdate(DragUpdateDetails details) {
+    _volume.value += details.delta.dx;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery
+        .of(context)
+        .size;
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.index}번 곡 이름'),
@@ -102,10 +120,10 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
             animation: _progressController,
             builder: (context, child) {
               final currentTime =
-                  _timeTween.transform(_progressController.value).floor();
+              _timeTween.transform(_progressController.value).floor();
 
               final remainingTime =
-                  _timeTween.transform(1 - _progressController.value).ceil();
+              _timeTween.transform(1 - _progressController.value).ceil();
 
               return Column(
                 children: [
@@ -123,7 +141,8 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
                     child: Row(
                       children: [
                         Text(
-                          "${_intToString((currentTime / 60).floor())}:${_intToString(currentTime % 60)}",
+                          "${_intToString((currentTime / 60)
+                              .floor())}:${_intToString(currentTime % 60)}",
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
@@ -132,7 +151,8 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
                         ),
                         const Spacer(),
                         Text(
-                          "${_intToString((remainingTime / 60).floor())}:${_intToString(remainingTime % 60)}",
+                          "${_intToString((remainingTime / 60)
+                              .floor())}:${_intToString(remainingTime % 60)}",
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
@@ -163,6 +183,29 @@ class _MusicPlayerDetailScreenState extends State<MusicPlayerDetailScreen>
                         //   height: 200,
                         // ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  GestureDetector(
+                    onHorizontalDragStart: (_) => _toggleDragging(),
+                    onHorizontalDragEnd: (_) => _toggleDragging(),
+                    onHorizontalDragUpdate: _onVolumeDragUpdate,
+                    child: AnimatedScale(
+                      scale: _dragging ? 1.1 : 1,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.bounceOut,
+                      child: Container(
+                        clipBehavior: Clip.hardEdge,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: CustomPaint(
+                          size: Size(size.width - 80, 50),
+                          painter: VolumePainter(),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -248,5 +291,39 @@ class ProgressBar extends CustomPainter {
   @override
   bool shouldRepaint(covariant ProgressBar oldDelegate) {
     return oldDelegate.progressValue != progressValue;
+  }
+}
+
+class VolumePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bgPaint = Paint()
+      ..color = Colors.grey.shade300;
+
+    final bgRRect = Rect.fromLTWH(
+      0,
+      0,
+      size.width,
+      size.height,
+    );
+
+    canvas.drawRect(bgRRect, bgPaint);
+
+    final volumePaint = Paint()
+      ..color = Colors.grey.shade500;
+
+    final volumeRect = Rect.fromLTWH(
+      0,
+      0,
+      size.width / 2,
+      size.height,
+    );
+
+    canvas.drawRect(volumeRect, volumePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant VolumePainter oldDelegate) {
+    return false;
   }
 }
