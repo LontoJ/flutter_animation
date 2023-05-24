@@ -11,9 +11,7 @@ class SwipingCardsScreen extends StatefulWidget {
 
 class _SwipingCardsScreenState extends State<SwipingCardsScreen>
     with SingleTickerProviderStateMixin {
-  late final size = MediaQuery
-      .of(context)
-      .size;
+  late final size = MediaQuery.of(context).size;
 
   late final AnimationController _position = AnimationController(
     vsync: this,
@@ -60,10 +58,10 @@ class _SwipingCardsScreenState extends State<SwipingCardsScreen>
   void _dropCard({required int dropDirection}) {
     _position
         .animateTo(
-      (size.width + 100) * dropDirection,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    )
+          (size.width + 100) * dropDirection,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        )
         .whenComplete(_whenComplete);
   }
 
@@ -99,24 +97,22 @@ class _SwipingCardsScreenState extends State<SwipingCardsScreen>
           final positionValueNormalized = _position.value / deviceWidth;
           final positionValueAbsNormalized =
               _position.value.abs() / deviceWidth;
-          final oneMinusPositionValueNormalized =
-              1 - (_position.value / deviceWidth);
           final angle = _rotation.transform(
-              (_position.value + deviceWidth / 2) / deviceWidth) *
+                  (_position.value + deviceWidth / 2) / deviceWidth) *
               pi /
               180;
           final scale = _scale.transform(positionValueAbsNormalized);
           final cancelButtonScale =
-          _buttonScale.transform(-(positionValueNormalized));
+              _buttonScale.transform(-(positionValueNormalized));
           final checkButtonScale =
-          _buttonScale.transform(positionValueNormalized);
+              _buttonScale.transform(positionValueNormalized);
           final checkColor = _checkColor.transform(positionValueNormalized);
           final checkColorBackground =
-          _checkColor.transform(1 - (positionValueNormalized));
+              _checkColor.transform(1 - (positionValueNormalized));
           final cancelColor =
-          _cancelColor.transform(-1 * (positionValueNormalized));
+              _cancelColor.transform(-1 * (positionValueNormalized));
           final cancelColorBackground =
-          _cancelColor.transform(1 + (positionValueNormalized));
+              _cancelColor.transform(1 + (positionValueNormalized));
           return Stack(
             alignment: Alignment.topCenter,
             children: [
@@ -214,14 +210,8 @@ class Card extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.hardEdge,
       child: SizedBox(
-        width: MediaQuery
-            .of(context)
-            .size
-            .width * 0.8,
-        height: MediaQuery
-            .of(context)
-            .size
-            .height * 0.5,
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.5,
         child: Image.asset(
           "assets/covers/$index.jpeg",
           fit: BoxFit.cover,
